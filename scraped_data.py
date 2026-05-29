@@ -5,8 +5,9 @@ import time
 
 '''
 Data is being scraped from the NFL website. The website itself is broken up into offense and defense, then passing and
-rushing for both sides of the ball. Right now, I am only focusing on scraping offensive passing data from the 2025 NFL 
-season.
+rushing for both sides of the ball. The data is given as data frames broken up into offensive and defensive tables,
+with passing stats represented first (left most), and rushing stats represented second (right most). The distinction 
+comes when attempts (Att) is repeated the first time. 
 '''
 
 '''
@@ -34,35 +35,83 @@ rushing_stats = ['Att', 'Rush Yds', 'YPC', 'TD',
                  '20+', '40+', 'Lng', 'Rush 1st', 'Rush 1st%',
                  'Rush FUM']
 
-years = ['2025', '2024', '2023', '2022']
+years = ['2025', '2024', '2023', '2022',
+         '2021', '2020', '2019', '2018',
+         '2017', '2016', '2015', '2014',
+         '2013', '2012', '2011', '2010',
+         '2009', '2008', '2007', '2006',
+         '2005', '2004', '2003', '2002']
 
 #Only looking at either passing or rushing currently
 part_of_game = ['Passing', 'Rushing']
 
 starttime = time.time()
 
-dfs = []
+dfs_offense = []
 
 #Offensive Stats
 for year in years:
+
+    # Handling the Washington Commanders name Changes in 2019 and 2021
+    if year == '2021':
+        teams[teams.index('Commanders')] = 'Football Team'
+        teams.sort()
+    elif year == '2019':
+        teams[teams.index('Football Team')] = 'Redskins'
+        teams.sort()
+
     #List of both offensive passing and rushing stats from each team in one year.
-    df_offenseive_stats = []
+    df_offensive_stats = []
     for type in part_of_game:
         url = f'https://www.nfl.com/stats/team-stats/offense/{type}/{year}/reg/all'
         df = pd.read_html(url)[0]
-        df.index = df['Team']
+        df = df.sort_values(by='Team')
+        df.index = teams
         df = df.drop(columns = 'Team')
-        df = df.sort_values(by = 'Team')
-        df_offenseive_stats.append(df)
-        #print(df)
-    df_all_offensive_stats = pd.concat([df_offenseive_stats[0], df_offenseive_stats[1]], axis = 1)
-    #Indices of each element of df_offenseive_stats can be left as either 0 or 1 because this is only looking at either
+        #df.index = teams
+        df_offensive_stats.append(df)
+    df_all_offensive_stats = pd.concat([df_offensive_stats[0], df_offensive_stats[1]], axis = 1)
+    #Indices of each element of df_offensive_stats can be left as either 0 or 1 because this is only looking at either
     #passing or rushing.
-    dfs.append(df_all_offensive_stats)
 
+    dfs_offense.append(df_all_offensive_stats)
 
+dfs_defense = []
 
-data = pd.concat(dfs)
-print(data.to_string())
+#Denensive Stats
+for year in years:
+
+    # Handling the Washington Commanders name Changes in 2019 and 2021
+    if year == '2025':
+        teams[teams.index('Redskins')] = 'Commanders'
+    if year == '2021':
+        teams[teams.index('Commanders')] = 'Football Team'
+        teams.sort()
+    elif year == '2019':
+        teams[teams.index('Football Team')] = 'Redskins'
+        teams.sort()
+
+    #List of both offensive passing and rushing stats from each team in one year.
+    df_defensive_stats = []
+    for type in part_of_game:
+        url = f'https://www.nfl.com/stats/team-stats/defense/{type}/{year}/reg/all'
+        df = pd.read_html(url)[0]
+        df = df.sort_values(by='Team')
+        df.index = teams
+        df = df.drop(columns = 'Team')
+        #df.index = teams
+        df_defensive_stats.append(df)
+    df_all_offensive_stats = pd.concat([df_defensive_stats[0], df_defensive_stats[1]], axis = 1)
+
+    dfs_defense.append(df_all_offensive_stats)
+
+offensive_data = pd.concat(dfs_offense)
+defensive_data = pd.concat(dfs_defense)
+
+print(offensive_data.to_string())
+
+#Uncomment each file to save it to directory
+#offensive_data.to_csv('offensive_data.csv')
+#defensive_data.to_csv('defensive_data.csv')
 
 print(f"{(time.time() - starttime):3f} seconds")

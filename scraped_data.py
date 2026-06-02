@@ -8,7 +8,9 @@ Data is being scraped from the NFL website. The website itself is broken up into
 rushing for both sides of the ball. The data is given as data frames broken up into offensive and defensive tables,
 with passing stats represented first (left most), and rushing stats represented second (right most). The distinction 
 comes when attempts (Att) is repeated the first time. Wins, losses, ties, and win percentage will be placed in the
-first 3 columns of the table. 
+first 3 columns of the table. There are multiple loops over the set years to separate offensive and defensive stats, as
+as well as team records. For records, team names are given with city first. For team stats, team names are only team
+names without the city. 
 '''
 
 '''
@@ -57,20 +59,16 @@ start_time = time.time()
 dfs_win_loss_tie = []
 
 for year in years:
-    if year == '2021':
-        teams[teams.index('Commanders')] = 'Football Team'
-        teams.sort()
-    elif year == '2019':
-        teams[teams.index('Football Team')] = 'Redskins'
-        teams.sort()
-
     url = f'https://www.nfl.com/standings/league/{year}/REG'
     df = pd.read_html(url)[0]
-    #df = df.drop(columns = 'NFL Team')
+    df['NFL Team'] = df['NFL Team'].str.replace({'xz': '', 'xy': '', r'\*': ''}, regex=True)
+    df['NFL Team'] = df['NFL Team'].str.replace(r'(\w+)\1$', r'\1', regex=True)
 
+    #df = df.drop(columns = 'NFL Team')
     df = df.drop(columns = omitted_stats)
     dfs_win_loss_tie.append(df)
     print(df.to_string())
+
 
 
 

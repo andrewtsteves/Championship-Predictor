@@ -1,6 +1,7 @@
 import requests as req
 from bs4 import BeautifulSoup
 import pandas as pd
+import re
 import time
 
 '''
@@ -17,14 +18,43 @@ names without the city.
 Use the following import of the data to check if the import is functioning correctly
 r = req.get('https://www.nfl.com/stats/team-stats/offense/passing/2025/reg/all')
 '''
-teams = ['49ers', 'Bears', 'Bengals', 'Bills',
-         'Broncos', 'Browns', 'Buccaneers', 'Cardinals',
-         'Chargers', 'Chiefs', 'Colts', 'Commanders',
-         'Cowboys', 'Dolphins', 'Eagles','Falcons',
-         'Giants', 'Jaguars', 'Jets', 'Lions',
-         'Packers', 'Panthers', 'Patriots', 'Raiders',
-         'Rams', 'Ravens', 'Saints', 'Seahawks',
-         'Steelers', 'Texans', 'Titans', 'Vikings']
+
+teams = {'49ers': ['San Francisco 49ers 49ers', 'San Francisco 49ers49ers', 'San Francisco 49ersNiners',
+                   'San Francisco 49ers Niners', '49ers49ers'],
+         'Bears': ['Chicago BearsBears', 'Chicago Bears Bears', 'BearsBears'],
+         'Bengals': ['Cincinnati BengalsBengals', 'Cincinnati Bengals Bengals', 'BengalsBengals'],
+         'Bills': ['Buffalo Bills Bills', 'Buffalo BillsBills', 'BillsBills'],
+         'Broncos': ['Denver Broncos Broncos', 'Denver BroncosBroncos', 'BroncosBroncos'],
+         'Browns': ['Cleveland BrownsBrowns', 'Cleveland Browns Browns', 'BrownsBrowns'],
+         'Buccaneers': ['Tampa Bay Buccaneers Buccaneers', 'Tampa Bay BuccaneersBuccaneers', 'BuccaneersBuccaneers'],
+         'Cardinals': ['Arizona CardinalsCardinals', 'Arizona Cardinals Cardinals', 'CardinalsCardinals'],
+         'Chargers': ['Los Angeles Chargers Chargers', 'Los Angeles ChargersChargers', 'ChargersChargers'],
+         'Chiefs': ['Kansas City ChiefsChiefs', 'Kansas City Chiefs Chiefs', 'ChiefsChiefs'],
+         'Colts': ['Indianapolis Colts Colts', 'Indianapolis ColtsColts', 'ColtsColts'],
+         'Commanders': ['Washington CommandersCommanders', 'Washington Commanders Commanders', 'CommandersCommanders',
+                        'Washington CommandersFootball Team', 'Washington Commanders Football Team', 'Football TeamFootball Team',
+                        'Washington CommandersRedskins', 'Washington Commanders Redskins', 'RedskinsRedskins'],
+         'Cowboys': ['Dallas CowboysCowboys', 'Dallas Cowboys Cowboys', 'CowboysCowboys'],
+         'Dolphins': ['Miami DolphinsDolphins', 'Miami Dolphins Dolphins', 'DolphinsDolphins'],
+         'Eagles': ['Philadelphia Eagles Eagles', 'Philadelphia EaglesEagles', 'EaglesEagles'],
+         'Falcons': ['Atlanta Falcons Falcons', 'Atlanta FalconsFalcons', 'FalconsFalcons'],
+         'Giants': ['New York GiantsGiants', 'New York Giants Giants', 'GiantsGiants'],
+         'Jaguars': ['Jacksonville Jaguars Jaguars', 'Jacksonville JaguarsJaguars', 'JaguarsJaguars'],
+         'Jets': ['New York Jets Jets', 'New York JetsJets', 'JetsJets'],
+         'Lions': ['Detroit Lions Lions', 'Detroit LionsLions', 'LionsLions'],
+         'Packers': ['Green Bay Packers Packers', 'Green Bay PackersPackers', 'PackersPackers'],
+         'Panthers': ['Carolina Panthers Panthers', 'Carolina PanthersPanthers', 'PanthersPanthers'],
+         'Patriots': ['New England Patriots Patriots', 'New England PatriotsPatriots', 'PatriotsPatriots'],
+         'Raiders': ['Las Vegas RaidersRaiders', 'Las Vegas Raiders Raiders', 'RaidersRaiders'],
+         'Rams': ['Los Angeles Rams Rams', 'Los Angeles RamsRams', 'RamsRams'],
+         'Ravens': ['Baltimore Ravens Ravens', 'Baltimore RavensRavens', 'RavensRavens'],
+         'Saints': ['New Orleans Saints Saints', 'New Orleans SaintsSaints', 'SaintsSaints'],
+         'Seahawks': ['Seattle Seahawks Seahawks', 'Seattle SeahawksSeahawks', 'SeahawksSeahawks'],
+         'Steelers': ['Pittsburgh Steelers Steelers', 'Pittsburgh SteelersSteelers', 'SteelersSteelers'],
+         'Texans': ['Houston Texans Texans', 'Houston TexansTexans', 'TexansTexans'],
+         'Titans': ['Tennessee Titans Titans', 'Tennessee TitansTitans', 'TitansTitans'],
+         'Vikings': ['Minnesota Vikings Vikings', 'Minnesota VikingsVikings', 'VikingsVikings']
+         }
 
 #Stats for both offensive and defensive rushing and passing are the same
 passing_stats = ['Att', 'Cmp', 'Cmp %', 'Yds/Att',
@@ -38,70 +68,57 @@ rushing_stats = ['Att', 'Rush Yds', 'YPC', 'TD',
                  '20+', '40+', 'Lng', 'Rush 1st', 'Rush 1st%',
                  'Rush FUM']
 
-omitted_stats = ['PF', 'PA', 'Net Pts', 'Home', 'Road', 'Div',
+omitted_stats = ['NFL Team', 'PF', 'PA', 'Net Pts', 'Home', 'Road', 'Div',
                   'Pct', 'Conf', 'Pct', 'Non-Conf', 'Strk', 'Last 5', 'Pct.1']
 
-'''
+
 years = ['2025', '2024', '2023', '2022',
          '2021', '2020', '2019', '2018',
          '2017', '2016', '2015', '2014',
          '2013', '2012', '2011', '2010',
          '2009', '2008', '2007', '2006',
          '2005', '2004', '2003', '2002']
-'''
-years = ['2025', '2021', '2019']
 
 #Only looking at either passing or rushing currently
 part_of_game = ['Passing', 'Rushing']
 
 start_time = time.time()
 
+#Records of all NFL teams from 2002-2025
 dfs_win_loss_tie = []
-
 for year in years:
     url = f'https://www.nfl.com/standings/league/{year}/REG'
+    #The website comes preloaded with NFL teams sorted by win percentage lowest to highest
     df = pd.read_html(url)[0]
     df['NFL Team'] = df['NFL Team'].str.replace({'xz': '', 'xy': '', r'\*': ''}, regex=True)
-    df['NFL Team'] = df['NFL Team'].str.replace(r'(\w+)\1$', r'\1', regex=True)
-
-    #df = df.drop(columns = 'NFL Team')
+    df['NFL Team'] = df['NFL Team'].str.strip()
+    reverse_items = {v: k for k, vals in teams.items() for v in vals}
+    df['NFL Team'] = df['NFL Team'].replace(reverse_items)
+    df = df.sort_values(by=['NFL Team'], ascending=True)
+    df.index = teams
     df = df.drop(columns = omitted_stats)
+
     dfs_win_loss_tie.append(df)
-    print(df.to_string())
 
-
-
-
-
-'''
 #Offensive Stats
 dfs_offense = []
 for year in years:
-
-    # Handling the Washington Commanders name Changes in 2019 and 2021
-    if year == '2025':
-        teams[teams.index('Redskins')] = 'Commanders'
-    if year == '2021':
-        teams[teams.index('Commanders')] = 'Football Team'
-        teams.sort()
-    elif year == '2019':
-        teams[teams.index('Football Team')] = 'Redskins'
-        teams.sort()
-
     #List of both offensive passing and rushing stats from each team in one year.
     df_offensive_stats = []
     for type in part_of_game:
         url = f'https://www.nfl.com/stats/team-stats/offense/{type}/{year}/reg/all'
         df = pd.read_html(url)[0]
-        df = df.sort_values(by = 'Team')
+        reverse_items = {v: k for k, vals in teams.items() for v in vals}
+        df['Team'] = df['Team'].replace(reverse_items)
+        df = df.sort_values(by=['Team'], ascending=True)
         df.index = teams
         df = df.drop(columns = 'Team')
-        #df.index = teams
+
         df_offensive_stats.append(df)
     df_all_offensive_stats = pd.concat([df_offensive_stats[0], df_offensive_stats[1]], axis = 1)
     #Indices of each element of df_offensive_stats can be left as either 0 or 1 because this is only looking at either
     #passing or rushing.
-
+    #print(df_all_offensive_stats)
     dfs_offense.append(df_all_offensive_stats)
 
 
@@ -109,35 +126,28 @@ for year in years:
 #Denensive Stats
 dfs_defense = []
 for year in years:
-
-    # Handling the Washington Commanders name Changes in 2019 and 2021
-    if year == '2025':
-        teams[teams.index('Redskins')] = 'Commanders'
-    if year == '2021':
-        teams[teams.index('Commanders')] = 'Football Team'
-        teams.sort()
-    elif year == '2019':
-        teams[teams.index('Football Team')] = 'Redskins'
-        teams.sort()
-
-
     #List of both offensive passing and rushing stats from each team in one year.
     df_defensive_stats = []
     for type in part_of_game:
         url = f'https://www.nfl.com/stats/team-stats/defense/{type}/{year}/reg/all'
         df = pd.read_html(url)[0]
-        df = df.sort_values(by='Team')
+        reverse_items = {v: k for k, vals in teams.items() for v in vals}
+        df['Team'] = df['Team'].replace(reverse_items)
+        df = df.sort_values(by=['Team'], ascending=True)
         df.index = teams
         df = df.drop(columns = 'Team')
-        #df.index = teams
         df_defensive_stats.append(df)
-    df_all_offensive_stats = pd.concat([df_defensive_stats[0], df_defensive_stats[1]], axis = 1)
+    df_all_defensive_stats = pd.concat([df_defensive_stats[0], df_defensive_stats[1]], axis = 1)
 
-    dfs_defense.append(df_all_offensive_stats)
-'''
+    dfs_defense.append(df_all_defensive_stats)
 
-#offensive_data = pd.concat(dfs_offense)
-#defensive_data = pd.concat(dfs_defense)
+
+record_data = pd.concat(dfs_win_loss_tie, keys = years)
+offensive_stats = pd.concat(dfs_offense, keys = years)
+defensive_stats = pd.concat(dfs_defense, keys = years)
+
+offensive_data = pd.concat([record_data, offensive_stats], axis = 1)
+defensive_data = pd.concat([record_data, defensive_stats], axis = 1)
 
 #Uncomment each file to save it to directory
 #offensive_data.to_csv('offensive_data.csv')

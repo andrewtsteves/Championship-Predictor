@@ -106,7 +106,12 @@ for year in years.keys():
 
 
 def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict) -> pd.DataFrame:
-    #Scraping offensive and defensive stats
+    '''
+    Scraping offensive and defensive stats. Parameters:
+    side: side of ball, either offense or defense
+    valid_years: years desired, strings in dictionary
+    reverse_items: reversed dictionary of teams with all entries as strings
+    '''
     dfs = []
     for year in valid_years:
         # List of both offensive passing and rushing stats from each team in one year.
@@ -130,6 +135,7 @@ def get_superbowl_winners(valid_years: dict, NFL_teams: dict) -> pd.DataFrame:
     return pd.concat(dfs, keys = valid_years.keys())
 
 superbowl_winners = get_superbowl_winners(years, teams)
+
 win_loss_tie = pd.concat(dfs_win_loss_tie, keys = years.keys())
 offensive_stats = get_stats('offense', years, teams, reverse_items)
 defensive_stats = get_stats('defense', years, teams, reverse_items)

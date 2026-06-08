@@ -56,6 +56,8 @@ teams = {'49ers': ['San Francisco 49ers 49ers', 'San Francisco 49ers49ers', 'San
          'Vikings': ['Minnesota Vikings Vikings', 'Minnesota VikingsVikings', 'VikingsVikings']
          }
 
+reverse_items = {v: k for k, vals in teams.items() for v in vals}
+
 #Stats for both offensive and defensive rushing and passing are the same
 passing_stats = ['Att', 'Cmp', 'Cmp %', 'Yds/Att',
          'Pass Yds', 'TD', 'INT',
@@ -71,13 +73,17 @@ rushing_stats = ['Att', 'Rush Yds', 'YPC', 'TD',
 omitted_stats = ['NFL Team', 'PF', 'PA', 'Net Pts', 'Home', 'Road', 'Div',
                   'Pct', 'Conf', 'Pct', 'Non-Conf', 'Strk', 'Last 5', 'Pct.1']
 
+years = {'2025': 'Seahawks', '2024': 'Eagles', '2023': 'Chiefs', '2022': 'Chiefs',
+                     '2021': 'Rams', '2020': 'Buccaneers', '2019': 'Chiefs', '2018': 'Patriots',
+                     '2017': 'Eagles', '2016': 'Patriots', '2015': 'Broncos', '2014': 'Patriots',
+                     '2013': 'Seahawks', '2012': 'Ravens', '2011': 'Giants', '2010': 'Packers',
+                     '2009': 'Saints', '2008': 'Steelers', '2007': 'Giants', '2006': 'Colts',
+                     '2005': 'Steelers', '2004': 'Giants', '2003': 'Patriots', '2002': 'Patriots'
+                     }
+df = pd.DataFrame({'SB Winner': 0}, index = pd.Index(teams.keys(), name = 'Team'))
+df.loc['49ers'] = 1
 
-years = ['2025', '2024', '2023', '2022',
-         '2021', '2020', '2019', '2018',
-         '2017', '2016', '2015', '2014',
-         '2013', '2012', '2011', '2010',
-         '2009', '2008', '2007', '2006',
-         '2005', '2004', '2003', '2002']
+
 
 #Only looking at either passing or rushing currently
 part_of_game = ['Passing', 'Rushing']
@@ -86,71 +92,53 @@ start_time = time.time()
 
 #Records of all NFL teams from 2002-2025
 dfs_win_loss_tie = []
-for year in years:
+for year in years.keys():
     url = f'https://www.nfl.com/standings/league/{year}/REG'
     #The website comes preloaded with NFL teams sorted by win percentage lowest to highest
     df = pd.read_html(url)[0]
-    df['NFL Team'] = df['NFL Team'].str.replace({'xz': '', 'xy': '', r'\*': ''}, regex=True)
-    df['NFL Team'] = df['NFL Team'].str.strip()
-    reverse_items = {v: k for k, vals in teams.items() for v in vals}
-    df['NFL Team'] = df['NFL Team'].replace(reverse_items)
+    df['NFL Team'] = df['NFL Team'].str.replace(r'xz|xy|[*]', '', regex=True)
+    df['NFL Team'] = df['NFL Team'].str.strip().replace(reverse_items)
     df = df.sort_values(by=['NFL Team'], ascending=True)
     df.index = teams
     df = df.drop(columns = omitted_stats)
 
     dfs_win_loss_tie.append(df)
 
-#Offensive Stats
-dfs_offense = []
-for year in years:
-    #List of both offensive passing and rushing stats from each team in one year.
-    df_offensive_stats = []
-    for type in part_of_game:
-        url = f'https://www.nfl.com/stats/team-stats/offense/{type}/{year}/reg/all'
-        df = pd.read_html(url)[0]
-        reverse_items = {v: k for k, vals in teams.items() for v in vals}
-        df['Team'] = df['Team'].replace(reverse_items)
-        df = df.sort_values(by=['Team'], ascending=True)
-        df.index = teams
-        df = df.drop(columns = 'Team')
 
-        df_offensive_stats.append(df)
-    df_all_offensive_stats = pd.concat([df_offensive_stats[0], df_offensive_stats[1]], axis = 1)
-    #Indices of each element of df_offensive_stats can be left as either 0 or 1 because this is only looking at either
-    #passing or rushing.
-    #print(df_all_offensive_stats)
-    dfs_offense.append(df_all_offensive_stats)
+def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict) -> pd.DataFrame:
+    #Scraping offensive and defensive stats
+    dfs = []
+    for year in valid_years:
+        # List of both offensive passing and rushing stats from each team in one year.
+        year_stats = []
+        for stat_type in part_of_game:
+            url = f'https://www.nfl.com/stats/team-stats/{side}/{stat_type}/{year}/reg/all'
+            df = pd.read_html(url)[0]
+            df['Team'] = df['Team'].replace(reverse_items)
+            df = df.sort_values(by=['Team'], ascending=True).set_index(pd.Index(NFL_teams.keys()))
+            df = df.drop(columns='Team')
+            year_stats.append(df)
+        dfs.append(pd.concat(year_stats, axis = 1))
+    return pd.concat(dfs, keys = valid_years.keys())
 
+def get_superbowl_winners(valid_years: dict, NFL_teams: dict) -> pd.DataFrame:
+    dfs = []
+    for year, winner in valid_years.items():
+        year_df = pd.DataFrame({'SB Winner': 0}, index=pd.Index(NFL_teams.keys(), name='Team'))
+        year_df.loc[winner, 'SB Winner'] = 1
+        dfs.append(year_df)
+    return pd.concat(dfs, keys = valid_years.keys())
 
+superbowl_winners = get_superbowl_winners(years, teams)
+win_loss_tie = pd.concat(dfs_win_loss_tie, keys = years.keys())
+offensive_stats = get_stats('offense', years, teams, reverse_items)
+defensive_stats = get_stats('defense', years, teams, reverse_items)
 
-#Denensive Stats
-dfs_defense = []
-for year in years:
-    #List of both offensive passing and rushing stats from each team in one year.
-    df_defensive_stats = []
-    for type in part_of_game:
-        url = f'https://www.nfl.com/stats/team-stats/defense/{type}/{year}/reg/all'
-        df = pd.read_html(url)[0]
-        reverse_items = {v: k for k, vals in teams.items() for v in vals}
-        df['Team'] = df['Team'].replace(reverse_items)
-        df = df.sort_values(by=['Team'], ascending=True)
-        df.index = teams
-        df = df.drop(columns = 'Team')
-        df_defensive_stats.append(df)
-    df_all_defensive_stats = pd.concat([df_defensive_stats[0], df_defensive_stats[1]], axis = 1)
-
-    dfs_defense.append(df_all_defensive_stats)
-
-
-record_data = pd.concat(dfs_win_loss_tie, keys = years)
-offensive_stats = pd.concat(dfs_offense, keys = years)
-defensive_stats = pd.concat(dfs_defense, keys = years)
-
-offensive_data = pd.concat([record_data, offensive_stats], axis = 1)
-defensive_data = pd.concat([record_data, defensive_stats], axis = 1)
+offensive_data = pd.concat([win_loss_tie, superbowl_winners, offensive_stats], axis = 1)
+defensive_data = pd.concat([win_loss_tie, superbowl_winners, offensive_stats], axis = 1)
 
 #Uncomment each file to save it to directory
-#offensive_data.to_csv('offensive_data.csv')
-#defensive_data.to_csv('defensive_data.csv')
+offensive_data.to_csv('offensive_data.csv')
+defensive_data.to_csv('defensive_data.csv')
 
 print(f"{(time.time() - start_time):3f} seconds")

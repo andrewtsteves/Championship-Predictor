@@ -73,6 +73,7 @@ rushing_stats = ['Att', 'Rush Yds', 'YPC', 'TD',
 omitted_stats = ['NFL Team', 'PF', 'PA', 'Net Pts', 'Home', 'Road', 'Div',
                   'Pct', 'Conf', 'Pct', 'Non-Conf', 'Strk', 'Last 5', 'Pct.1']
 
+#All superbowl winners corresponding to the year (season) they won
 years = {'2025': 'Seahawks', '2024': 'Eagles', '2023': 'Chiefs', '2022': 'Chiefs',
                      '2021': 'Rams', '2020': 'Buccaneers', '2019': 'Chiefs', '2018': 'Patriots',
                      '2017': 'Eagles', '2016': 'Patriots', '2015': 'Broncos', '2014': 'Patriots',
@@ -122,16 +123,25 @@ def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict
             df['Team'] = df['Team'].replace(reverse_items)
             df = df.sort_values(by=['Team'], ascending=True).set_index(pd.Index(NFL_teams.keys()))
             df = df.drop(columns='Team')
+            df['Lng'] = df['Lng'].str.replace('T', '')
             year_stats.append(df)
         dfs.append(pd.concat(year_stats, axis = 1))
-    return pd.concat(dfs, keys = valid_years.keys())
+
+    return pd.concat(dfs, keys=valid_years.keys())
 
 def get_superbowl_winners(valid_years: dict, NFL_teams: dict) -> pd.DataFrame:
+    '''
+    Obtains all superbowl winners since 2002.
+    :param valid_years: years desired, strings in dictionary
+    :param NFL_teams: NFL teams desired
+    :return: dataframe
+    '''
     dfs = []
     for year, winner in valid_years.items():
         year_df = pd.DataFrame({'SB Winner': 0}, index=pd.Index(NFL_teams.keys(), name='Team'))
         year_df.loc[winner, 'SB Winner'] = 1
         dfs.append(year_df)
+
     return pd.concat(dfs, keys = valid_years.keys())
 
 superbowl_winners = get_superbowl_winners(years, teams)
@@ -140,11 +150,18 @@ win_loss_tie = pd.concat(dfs_win_loss_tie, keys = years.keys())
 offensive_stats = get_stats('offense', years, teams, reverse_items)
 defensive_stats = get_stats('defense', years, teams, reverse_items)
 
+
+
 offensive_data = pd.concat([win_loss_tie, superbowl_winners, offensive_stats], axis = 1)
-defensive_data = pd.concat([win_loss_tie, superbowl_winners, offensive_stats], axis = 1)
+offensive_data = offensive_data.reset_index()
+offensive_data.columns = ['Year', 'Team'] + list(offensive_data.columns[2:])
+
+defensive_data = pd.concat([win_loss_tie, superbowl_winners, defensive_stats], axis = 1)
+defensive_data = defensive_data.reset_index()
+defensive_data.columns = ['Year', 'Team'] + list(defensive_data.columns[2:])
 
 #Uncomment each file to save it to directory
-offensive_data.to_csv('offensive_data.csv')
-defensive_data.to_csv('defensive_data.csv')
+offensive_data.to_csv('offensive_data.csv', index = False)
+defensive_data.to_csv('defensive_data.csv', index = False)
 
 print(f"{(time.time() - start_time):3f} seconds")

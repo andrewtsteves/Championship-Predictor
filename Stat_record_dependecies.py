@@ -4,9 +4,16 @@ import pandas as pd
 offensive_data = pd.read_csv('offensive_data.csv')
 defensive_data = pd.read_csv('defensive_data.csv')
 
-def stats(side: pd.DataFrame, outcome: str, stat: str):
-    return [side[outcome].to_list(), side[stat].to_list()]
+'''
+Stats() provides a quick way to get the outcomes of each team's seasons (x) and the desired stat for 
+comparison (y) in a comma-separated list.
+'''
 
-attempts = stats(offensive_data, 'W', 'Att')
-cmp = stats(offensive_data, 'W', 'Cmp')
-passyds = stats(offensive_data, 'W', 'Pass Yds')
+def stats(side: pd.DataFrame, outcome: str, stat: str) -> np.array:
+    '''
+    :param side: 'offense' or 'defense'
+    :param outcome: 'W' or 'L'
+    :param stat: Any statistical category (reference scraped_dats for all stat abbreviations)
+    :return: 2xN dimensional array
+    '''
+    return np.array([side[outcome], side[stat]])

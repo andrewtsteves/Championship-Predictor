@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-offensive_data = pd.read_csv('offensive_data.csv')
-defensive_data = pd.read_csv('defensive_data.csv')
+offensive_data = pd.read_csv('/Users/andrewsteves/PycharmProjects/Championship-Predictor/Dataframes/offensive_data.csv')
+defensive_data = pd.read_csv('/Users/andrewsteves/PycharmProjects/Championship-Predictor/Dataframes/defensive_data.csv')
 
 '''
 Stats() provides a quick way to get the outcomes of each team's seasons (x) and the desired stat for 

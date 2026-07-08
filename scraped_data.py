@@ -84,8 +84,6 @@ years = {'2025': 'Seahawks', '2024': 'Eagles', '2023': 'Chiefs', '2022': 'Chiefs
 df = pd.DataFrame({'SB Winner': 0}, index = pd.Index(teams.keys(), name = 'Team'))
 df.loc['49ers'] = 1
 
-
-
 #Only looking at either passing or rushing currently
 part_of_game = ['Passing', 'Rushing']
 
@@ -104,7 +102,6 @@ for year in years.keys():
     df = df.drop(columns = omitted_stats)
 
     dfs_win_loss_tie.append(df)
-
 
 def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict) -> pd.DataFrame:
     '''
@@ -149,8 +146,6 @@ superbowl_winners = get_superbowl_winners(years, teams)
 win_loss_tie = pd.concat(dfs_win_loss_tie, keys = years.keys())
 offensive_stats = get_stats('offense', years, teams, reverse_items)
 defensive_stats = get_stats('defense', years, teams, reverse_items)
-
-
 
 offensive_data = pd.concat([win_loss_tie, superbowl_winners, offensive_stats], axis = 1)
 offensive_data = offensive_data.reset_index()

@@ -4,22 +4,26 @@ import Model_testing as M
 param_grid_LR = {'logisticregression__C': [0.0001, 0.001, 0.01, 0.1, 1, 100],
                  'logisticregression__solver': ['lbfgs'],
                  'logisticregression__class_weight': ['balanced'],
-                 'logisticregression__max_iter': [1000, 10000, 50000, 100000]}
+                 'logisticregression__max_iter': [1000, 10000, 50000, 100000],
+                 'logisticregression__random_state': [0, 1, 10, 100]}
 
 param_grid_DT = {'decisiontreeclassifier__criterion': ['gini', 'entropy', 'log_loss'],
                  'decisiontreeclassifier__splitter': ['best', 'random'],
                  'decisiontreeclassifier__class_weight': ['balanced'],
-                 'decisiontreeclassifier__max_depth': [5, 10, None],}
+                 'decisiontreeclassifier__max_depth': [5, 10, None],
+                 'decisiontreeclassifier__random_state': [0, 1, 10, 100]}
 
 param_grid_svc = {'svc__C': [0.001, 0.01, 0.1, 1, 100],
                   'svc__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
                   'svc__class_weight': ['balanced'],
-                  'svc__degree': [1, 3, 5, 7]}
+                  'svc__degree': [1, 3, 5, 7],
+                  'svc__random_state': [0, 1, 10, 100]}
 
 param_grid_rf = {'randomforestclassifier__criterion': ['gini', 'entropy', 'log_loss'],
                  'randomforestclassifier__max_depth': [5, 10, None],
                  'randomforestclassifier__class_weight': ['balanced'],
-                 }
+                 'randomforestclassifier__n_estimators': [1, 10, 100, 1000],
+                 'randomforestclassifier__random_state': [0, 1, 10, 100]}
 
 def search(estimator, param_grid):
     grid = GridSearchCV(estimator = estimator, param_grid = param_grid,
@@ -36,36 +40,37 @@ def search(estimator, param_grid):
 
     return grid_best_score, grid_best_params, random_best_score, random_best_params
 
-lr = search(M.pipeline_lr, param_grid_LR)
-dt = search(M.pipeline_DT, param_grid_DT)
-svc = search(M.pipeline_svc, param_grid_svc)
-rf = search(M.pipeline_RF, param_grid_rf)
+lr_best_params = search(M.pipeline_lr, param_grid_LR)
+dt_best_params = search(M.pipeline_DT, param_grid_DT)
+svc_best_params = search(M.pipeline_svc, param_grid_svc)
+rf_best_params = search(M.pipeline_RF, param_grid_rf)
 
 if __name__ == '__main__':
     print(f'Logistic Regression:')
-    print(f'Grid search best score: {lr[0]}')
-    print(f'Grid search best params: {lr[1]}')
+    print(f'Grid search best score: {lr_best_params[0]}')
+    print(f'Grid search best params: {lr_best_params[1]}')
     print('')
-    print(f'Random search best score: {lr[2]}')
-    print(f'Random search best params: {lr[3]}')
+    print(f'Random search best score: {lr_best_params[2]}')
+    print(f'Random search best params: {lr_best_params[3]}')
     print('------------------------------')
     print(f'Decision Tree:')
-    print(f'Grid search best score: {dt[0]}')
-    print(f'Grid search best params: {dt[1]}')
+    print(f'Grid search best score: {dt_best_params[0]}')
+    print(f'Grid search best params: {dt_best_params[1]}')
     print('')
-    print(f'Random search best score: {dt[2]}')
-    print(f'Random search best params: {dt[3]}')
+    print(f'Random search best score: {dt_best_params[2]}')
+    print(f'Random search best params: {dt_best_params[3]}')
     print('------------------------------')
     print(f'SVC:')
-    print(f'Grid search best score: {svc[0]}')
-    print(f'Grid search best params: {svc[1]}')
+    print(f'Grid search best score: {svc_best_params[0]}')
+    print(f'Grid search best params: {svc_best_params[1]}')
     print('')
-    print(f'Random search best score: {svc[2]}')
-    print(f'Random search best params: {svc[3]}')
+    print(f'Random search best score: {svc_best_params[2]}')
+    print(f'Random search best params: {svc_best_params[3]}')
     print('------------------------------')
     print(f'Random Forest:')
-    print(f'Grid search best score: {rf[0]}')
-    print(f'Grid search best params: {rf[1]}')
+    print(f'Grid search best score: {rf_best_params[0]}')
+    print(f'Grid search best params: {rf_best_params[1]}')
     print('')
-    print(f'Random search best score: {rf[2]}')
-    print(f'Random search best params: {rf[3]}')
+    print(f'Random search best score: {rf_best_params[2]}')
+    print(f'Random search best params: {rf_best_params[3]}')
+

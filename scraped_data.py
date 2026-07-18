@@ -20,7 +20,7 @@ r = req.get('https://www.nfl.com/stats/team-stats/offense/passing/2025/reg/all')
 '''
 
 teams = {'49ers': ['San Francisco 49ers 49ers', 'San Francisco 49ers49ers', 'San Francisco 49ersNiners',
-                   'San Francisco 49ers Niners', '49ers49ers'],
+                   'San Francisco 49ers Niners', '49ers49ers', 'NinersNiners'],
          'Bears': ['Chicago BearsBears', 'Chicago Bears Bears', 'BearsBears'],
          'Bengals': ['Cincinnati BengalsBengals', 'Cincinnati Bengals Bengals', 'BengalsBengals'],
          'Bills': ['Buffalo Bills Bills', 'Buffalo BillsBills', 'BillsBills'],
@@ -52,9 +52,44 @@ teams = {'49ers': ['San Francisco 49ers 49ers', 'San Francisco 49ers49ers', 'San
          'Seahawks': ['Seattle Seahawks Seahawks', 'Seattle SeahawksSeahawks', 'SeahawksSeahawks'],
          'Steelers': ['Pittsburgh Steelers Steelers', 'Pittsburgh SteelersSteelers', 'SteelersSteelers'],
          'Texans': ['Houston Texans Texans', 'Houston TexansTexans', 'TexansTexans'],
-         'Titans': ['Tennessee Titans Titans', 'Tennessee TitansTitans', 'TitansTitans'],
+         'Titans': ['Tennessee Titans Titans', 'Tennessee TitansTitans', 'TitansTitans',
+                    'Tennessee TitansOilers', 'Tennessee Titans Oilers', 'OilersOilers'],
          'Vikings': ['Minnesota Vikings Vikings', 'Minnesota VikingsVikings', 'VikingsVikings']
          }
+
+team_start_years = {'49ers': 1950,
+         'Bears': 1920,
+         'Bengals': 1968,
+         'Bills': 1960,
+         'Broncos': 1960,
+         'Browns': 1999,
+         'Buccaneers': 1976,
+         'Cardinals': 1920,
+         'Chargers': 1960,
+         'Chiefs': 1960,
+         'Colts': 1953,
+         'Commanders': 1932,
+         'Cowboys': 1960,
+         'Dolphins': 1966,
+         'Eagles': 1933,
+         'Falcons': 1966,
+         'Giants': 1925,
+         'Jaguars': 1995,
+         'Jets': 1960,
+         'Lions': 1930,
+         'Packers': 1921,
+         'Panthers': 1995,
+         'Patriots': 1960,
+         'Raiders': 1960,
+         'Rams': 1937,
+         'Ravens': 1996,
+         'Saints': 1967,
+         'Seahawks': 1976,
+         'Steelers': 1933,
+         'Texans': 2002,
+         'Titans': 1960,
+         'Vikings': 1961
+        }
 
 reverse_items = {v: k for k, vals in teams.items() for v in vals}
 
@@ -75,12 +110,21 @@ omitted_stats = ['NFL Team', 'PF', 'PA', 'Net Pts', 'Home', 'Road', 'Div',
 
 #All superbowl winners corresponding to the year (season) they won
 years = {'2025': 'Seahawks', '2024': 'Eagles', '2023': 'Chiefs', '2022': 'Chiefs',
-                     '2021': 'Rams', '2020': 'Buccaneers', '2019': 'Chiefs', '2018': 'Patriots',
-                     '2017': 'Eagles', '2016': 'Patriots', '2015': 'Broncos', '2014': 'Patriots',
-                     '2013': 'Seahawks', '2012': 'Ravens', '2011': 'Giants', '2010': 'Packers',
-                     '2009': 'Saints', '2008': 'Steelers', '2007': 'Giants', '2006': 'Colts',
-                     '2005': 'Steelers', '2004': 'Giants', '2003': 'Patriots', '2002': 'Patriots'
-                     }
+         '2021': 'Rams', '2020': 'Buccaneers', '2019': 'Chiefs', '2018': 'Patriots',
+         '2017': 'Eagles', '2016': 'Patriots', '2015': 'Broncos', '2014': 'Patriots',
+         '2013': 'Seahawks', '2012': 'Ravens', '2011': 'Giants', '2010': 'Packers',
+         '2009': 'Saints', '2008': 'Steelers', '2007': 'Giants', '2006': 'Colts',
+         '2005': 'Steelers', '2004': 'Patriots', '2003': 'Patriots', '2002': 'Buccaneers',
+         '2001': 'Patriots', '2000': 'Ravens', '1999': 'Rams', '1998': 'Broncos',
+         '1997': 'Broncos', '1996': 'Packers', '1995': 'Cowboys', '1994': '49ers',
+         '1993': 'Cowboys', '1992': 'Cowboys', '1991': 'Commanders', '1990': 'Giants',
+         '1989': '49ers', '1988': '49ers', '1987': 'Commanders', '1986': 'Giants',
+         '1985': 'Bears', '1984': '49ers', '1983': 'Raiders', '1982': 'Commanders',
+         '1981': '49ers', '1980': 'Raiders', '1979': 'Steelers', '1978': 'Steelers',
+         '1977': 'Cowboys', '1976': 'Raiders', '1975': 'Steelers', '1974': 'Steelers',
+         '1973': 'Dolphins', '1972': 'Dolphins', '1971': 'Cowboys', '1970': 'Colts',
+         }
+
 df = pd.DataFrame({'SB Winner': 0}, index = pd.Index(teams.keys(), name = 'Team'))
 df.loc['49ers'] = 1
 
@@ -89,16 +133,25 @@ part_of_game = ['Passing', 'Rushing']
 
 start_time = time.time()
 
+def get_teams_for_year(year, all_teams):
+    year_int = int(year)
+    return {k: v for k, v in all_teams.items() if k not in team_start_years or team_start_years[k] <= year_int}
+
 #Records of all NFL teams from 2002-2025
 dfs_win_loss_tie = []
+teams_per_year = {}  # Track actual teams found for each year
 for year in years.keys():
     url = f'https://www.nfl.com/standings/league/{year}/REG'
     #The website comes preloaded with NFL teams sorted by win percentage lowest to highest
     df = pd.read_html(url)[0]
     df['NFL Team'] = df['NFL Team'].str.replace(r'xz|xy|[*]', '', regex=True)
     df['NFL Team'] = df['NFL Team'].str.strip().replace(reverse_items)
+    year_teams = get_teams_for_year(year, teams)
+    # Filter to only teams we recognize and that existed in this year
+    df = df[df['NFL Team'].isin(year_teams.keys())]
     df = df.sort_values(by=['NFL Team'], ascending=True)
-    df.index = teams
+    df.index = df['NFL Team'].tolist()
+    teams_per_year[year] = df.index.tolist()
     df = df.drop(columns = omitted_stats)
 
     dfs_win_loss_tie.append(df)
@@ -118,30 +171,34 @@ def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict
             url = f'https://www.nfl.com/stats/team-stats/{side}/{stat_type}/{year}/reg/all'
             df = pd.read_html(url)[0]
             df['Team'] = df['Team'].replace(reverse_items)
-            df = df.sort_values(by=['Team'], ascending=True).set_index(pd.Index(NFL_teams.keys()))
-            df = df.drop(columns='Team')
+            year_teams = get_teams_for_year(year, NFL_teams)
+            df = df[df['Team'].isin(year_teams.keys())]
+            df = df.sort_values(by = ['Team'], ascending=True)
+            df.index = df['Team'].tolist()
+            df = df.drop(columns = 'Team')
             df['Lng'] = df['Lng'].str.replace('T', '')
             year_stats.append(df)
         dfs.append(pd.concat(year_stats, axis = 1))
 
     return pd.concat(dfs, keys=valid_years.keys())
 
-def get_superbowl_winners(valid_years: dict, NFL_teams: dict) -> pd.DataFrame:
+def get_superbowl_winners(valid_years: dict, teams_by_year: dict) -> pd.DataFrame:
     '''
     Obtains all superbowl winners since 2002.
     :param valid_years: years desired, strings in dictionary
-    :param NFL_teams: NFL teams desired
+    :param teams_by_year: dict mapping year to list of team names that existed
     :return: dataframe
     '''
     dfs = []
     for year, winner in valid_years.items():
-        year_df = pd.DataFrame({'SB Winner': 0}, index=pd.Index(NFL_teams.keys(), name='Team'))
+        year_team_list = teams_by_year[year]
+        year_df = pd.DataFrame({'SB Winner': 0}, index=pd.Index(year_team_list, name = 'Team'))
         year_df.loc[winner, 'SB Winner'] = 1
         dfs.append(year_df)
 
     return pd.concat(dfs, keys = valid_years.keys())
 
-superbowl_winners = get_superbowl_winners(years, teams)
+superbowl_winners = get_superbowl_winners(years, teams_per_year)
 
 win_loss_tie = pd.concat(dfs_win_loss_tie, keys = years.keys())
 offensive_stats = get_stats('offense', years, teams, reverse_items)

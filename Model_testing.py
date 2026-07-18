@@ -10,9 +10,10 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 
 offensive_data = st.offensive_data
+offensive_data_shuffled = offensive_data.sample(n = 1643)
 
-X = offensive_data.drop(columns = ['Team', 'SB Winner', 'Year'])
-y = offensive_data['SB Winner']
+X = offensive_data_shuffled.drop(columns = ['Team', 'SB Winner', 'Year'])
+y = offensive_data_shuffled['SB Winner']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 10, stratify = y)
 

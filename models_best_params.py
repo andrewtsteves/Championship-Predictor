@@ -8,8 +8,10 @@ from sklearn.model_selection import train_test_split
 import Stat_record_dependecies as st
 
 offensive_data = st.offensive_data
-X = offensive_data.drop(columns = ['Team', 'SB Winner', 'Year'])
-y = offensive_data['SB Winner']
+offensive_data_shuffled = offensive_data.sample(n = 1643)
+
+X = offensive_data_shuffled.drop(columns = ['Team', 'SB Winner', 'Year'])
+y = offensive_data_shuffled['SB Winner']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 10, stratify = y)
 

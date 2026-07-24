@@ -58,38 +58,37 @@ teams = {'49ers': ['San Francisco 49ers 49ers', 'San Francisco 49ers49ers', 'San
          }
 
 team_start_years = {'49ers': 1950,
-         'Bears': 1920,
-         'Bengals': 1968,
-         'Bills': 1960,
-         'Broncos': 1960,
-         'Browns': 1999,
-         'Buccaneers': 1976,
-         'Cardinals': 1920,
-         'Chargers': 1960,
-         'Chiefs': 1960,
-         'Colts': 1953,
-         'Commanders': 1932,
-         'Cowboys': 1960,
-         'Dolphins': 1966,
-         'Eagles': 1933,
-         'Falcons': 1966,
-         'Giants': 1925,
-         'Jaguars': 1995,
-         'Jets': 1960,
-         'Lions': 1930,
-         'Packers': 1921,
-         'Panthers': 1995,
-         'Patriots': 1960,
-         'Raiders': 1960,
-         'Rams': 1937,
-         'Ravens': 1996,
-         'Saints': 1967,
-         'Seahawks': 1976,
-         'Steelers': 1933,
-         'Texans': 2002,
-         'Titans': 1960,
-         'Vikings': 1961
-        }
+                    'Bears': 1920,
+                    'Bengals': 1968,
+                    'Bills': 1960,
+                    'Broncos': 1960,
+                    'Browns': 1999,
+                    'Buccaneers': 1976,
+                    'Cardinals': 1920,
+                    'Chargers': 1960,
+                    'Chiefs': 1960,
+                    'Colts': 1953,
+                    'Commanders': 1932,
+                    'Cowboys': 1960,
+                    'Dolphins': 1966,
+                    'Eagles': 1933,
+                    'Falcons': 1966,
+                    'Giants': 1925,
+                    'Jaguars': 1995,
+                    'Jets': 1960,
+                    'Lions': 1930,
+                    'Packers': 1921,
+                    'Panthers': 1995,
+                    'Patriots': 1960,
+                    'Raiders': 1960,
+                    'Rams': 1937,
+                    'Ravens': 1996,
+                    'Saints': 1967,
+                    'Seahawks': 1976,
+                    'Steelers': 1933,
+                    'Texans': 2002,
+                    'Titans': 1960,
+                    'Vikings': 1961}
 
 reverse_items = {v: k for k, vals in teams.items() for v in vals}
 
@@ -123,7 +122,7 @@ years = {'2025': 'Seahawks', '2024': 'Eagles', '2023': 'Chiefs', '2022': 'Chiefs
          '1981': '49ers', '1980': 'Raiders', '1979': 'Steelers', '1978': 'Steelers',
          '1977': 'Cowboys', '1976': 'Raiders', '1975': 'Steelers', '1974': 'Steelers',
          '1973': 'Dolphins', '1972': 'Dolphins', '1971': 'Cowboys', '1970': 'Colts',
-         }
+         '1969': 'Jets', '1968': 'Packers', '1967': 'Packers'}
 
 df = pd.DataFrame({'SB Winner': 0}, index = pd.Index(teams.keys(), name = 'Team'))
 df.loc['49ers'] = 1

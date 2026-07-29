@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
@@ -10,10 +11,16 @@ import Stat_record_dependecies as st
 offensive_data = st.offensive_data
 offensive_data_shuffled = offensive_data.sample(n = 1643)
 
-X = offensive_data_shuffled.drop(columns = ['Team', 'SB Winner', 'Year'])
+X = offensive_data_shuffled.drop(columns = ['SB Winner'])
 y = offensive_data_shuffled['SB Winner']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 10, stratify = y)
+team_index, team_year = X_test['Team'], X_test['Year']
+
+X_train = X_train.drop(columns = ['Team', 'Year'])
+X_test = X_test.drop(columns = ['Team', 'Year'])
+y_train = y_train.drop(columns = ['Team', 'Year'])
+y_test = y_test.drop(columns = ['Team', 'Year'])
 
 lr = make_pipeline(StandardScaler(),
                    LogisticRegression(C = 0.01, class_weight = 'balanced', random_state = 10,
@@ -23,7 +30,7 @@ y_pred_lr = lr.predict(X_test)
 
 svc = make_pipeline(StandardScaler(),
                     SVC(C = 100, class_weight = 'balanced', random_state= 1,
-                        kernel = 'sigmoid', degree = 5))
+                        kernel = 'sigmoid', degree = 5, probability = True))
 svc = svc.fit(X_train, y_train)
 y_pred_svc = svc.predict(X_test)
 

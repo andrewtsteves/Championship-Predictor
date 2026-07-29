@@ -142,7 +142,7 @@ teams_per_year = {}  # Track actual teams found for each year
 for year in years.keys():
     url = f'https://www.nfl.com/standings/league/{year}/REG'
     #The website comes preloaded with NFL teams sorted by win percentage lowest to highest
-    df = pd.read_html(url)[0]
+    response = req.get(url, headers = {'User-Agent': 'Mozilla/5.0'})
     df['NFL Team'] = df['NFL Team'].str.replace(r'xz|xy|[*]', '', regex=True)
     df['NFL Team'] = df['NFL Team'].str.strip().replace(reverse_items)
     year_teams = get_teams_for_year(year, teams)
@@ -168,7 +168,7 @@ def get_stats(side: str, valid_years: dict, NFL_teams: dict, reverse_items: dict
         year_stats = []
         for stat_type in part_of_game:
             url = f'https://www.nfl.com/stats/team-stats/{side}/{stat_type}/{year}/reg/all'
-            df = pd.read_html(url)[0]
+            response = req.get(url, headers = {'User-Agent': 'Mozilla/5.0'})
             df['Team'] = df['Team'].replace(reverse_items)
             year_teams = get_teams_for_year(year, NFL_teams)
             df = df[df['Team'].isin(year_teams.keys())]

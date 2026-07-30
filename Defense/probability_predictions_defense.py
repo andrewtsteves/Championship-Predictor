@@ -1,5 +1,4 @@
-import models_best_params as M
-import numpy as np
+import models_best_params_defense as M
 import pandas as pd
 
 probs_lr = M.lr.predict_proba(M.X_test)[:, 1]

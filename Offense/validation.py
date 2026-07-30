@@ -1,6 +1,5 @@
 from sklearn.model_selection import (StratifiedKFold, RepeatedStratifiedKFold,
-                                     cross_val_score, cross_validate)
-from sklearn.metrics import classification_report
+                                     cross_val_score)
 import Model_testing as M
 
 classifier_labels = ['Logistic Regression', 'Support Vector Machine',

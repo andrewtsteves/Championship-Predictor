@@ -1,10 +1,10 @@
-import numpy as np
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 import Stat_record_dependecies as st
 
@@ -36,12 +36,19 @@ y_pred_svc = svc.predict(X_test)
 
 dt = make_pipeline(StandardScaler(),
                    DecisionTreeClassifier(splitter = 'random', class_weight = 'balanced',
-                                          random_state = 1, criterion = 'log_loss', max_depth = 5))
+                                          random_state = 1, criterion = 'log_loss', max_depth = 50))
 dt = dt.fit(X_train, y_train)
 y_pred_dt = dt.predict(X_test)
 
 rf = make_pipeline(StandardScaler(),
                    RandomForestClassifier(n_estimators = 1, class_weight = 'balanced', random_state = 1,
-                                          criterion = 'gini', max_depth = 5))
+                                          criterion = 'gini', max_depth = 50))
 rf = rf.fit(X_train, y_train)
 y_pred_rf = rf.predict(X_test)
+
+MLP = make_pipeline(StandardScaler(),
+                    MLPClassifier(solver = 'adam', random_state = 0, learning_rate = 'adaptive',
+                                  activation = 'logistic', hidden_layer_sizes = (50, 50), max_iter = 10000))
+
+MLP = MLP.fit(X_train, y_train)
+y_pred_MLP = MLP.predict(X_test)

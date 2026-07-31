@@ -36,12 +36,12 @@ y_pred_svc = svc.predict(X_test)
 
 dt = make_pipeline(StandardScaler(),
                    DecisionTreeClassifier(splitter = 'random', class_weight = 'balanced',
-                                          random_state = 10, criterion = 'gini', max_depth = 5))
+                                          random_state = 10, criterion = 'gini', max_depth = 50))
 dt = dt.fit(X_train, y_train)
 y_pred_dt = dt.predict(X_test)
 
 rf = make_pipeline(StandardScaler(),
                    RandomForestClassifier(n_estimators = 1, class_weight = 'balanced', random_state = 1,
-                                          criterion = 'gini', max_depth = 5))
+                                          criterion = 'gini', max_depth = 50))
 rf = rf.fit(X_train, y_train)
 y_pred_rf = rf.predict(X_test)

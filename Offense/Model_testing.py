@@ -54,30 +54,32 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-model_MLP = MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=10000)
-model_MLP = model_MLP.fit(X_train_scaled, y_train)
+pipeline_MLP = make_pipeline(StandardScaler(),
+                             MLPClassifier(hidden_layer_sizes=(100, 50),
+                                           max_iter=10000))
+model_MLP = pipeline_MLP.fit(X_train_scaled, y_train)
 y_pred_MLP = model_MLP.predict(X_test_scaled)
 score_MLP = model_MLP.score(X_test_scaled, y_test)
 matrix_MLP = confusion_matrix(y_test, y_pred_MLP)
-cvs_MLP = cross_val_score(model_MLP, X_train_scaled, y_train, cv = 10)
+cvs_MLP = cross_val_score(model_MLP, X_train , y_train, cv = 10)
 
 if __name__ == "__main__":
-    print(f"Logistic Regression score: {score_lr}")
+    print(f"Logistic Regression score: {score_lr:.3f}")
     print(f"Cross validation score: {cvs_lr}")
     print(f"Logistic Regression confusion matrix: {matrix_lr}")
 
-    print(f"Decision Tree score: {score_DT}")
+    print(f"Decision Tree score: {score_DT:.3f}")
     print(f"Cross validation score: {cvs_DT}")
     print(f"Decision Tree confusion matrix: {matrix_DT}")
 
-    print(f"Random Forest score: {score_RF}")
+    print(f"Random Forest score: {score_RF:.3f}")
     print(f"Cross validation score: {cvs_RF}")
     print(f"Random Forest confusion matrix: {matrix_RF}")
 
-    print(f"SVC score: {score_svc}")
+    print(f"SVC score: {score_svc:.3f}")
     print(f"Cross validation score: {cvs_svc}")
     print(f"SVC confusion matrix: {matrix_svc}")
 
-    print(f"MLP score: {score_MLP}")
-    print(f"Cross validation score: {cvs_MLP}")
+    print(f"MLP score: {score_MLP:.3f}")
+    print(f"MLP cross validation score: {cvs_MLP}")
     print(f"MLP confusion matrix: {matrix_MLP}")

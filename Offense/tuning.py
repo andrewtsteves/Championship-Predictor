@@ -25,6 +25,15 @@ param_grid_rf = {'randomforestclassifier__criterion': ['gini', 'entropy', 'log_l
                  'randomforestclassifier__n_estimators': [1, 10, 100, 1000],
                  'randomforestclassifier__random_state': [0, 1, 10, 100]}
 
+param_grid_MLP = {'mlpclassifier__hidden_layer_sizes': [(50, ), (50, 50),
+                                                        (100, ), (100, 50),
+                                                        (100, 100), (200, 200)],
+                  'mlpclassifier__activation': ['relu', 'tanh', 'logistic', 'identity'],
+                  'mlpclassifier__solver': ['lbgfs', 'sgd', 'adam'],
+                  'mlpclassifier__learning_rate': ['constant', 'adaptive'],
+                  'mlpclassifier__alpha': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+                  'mlpclassifier__random_state': [0, 1, 10, 100]}
+
 def search(estimator, param_grid):
     grid = GridSearchCV(estimator = estimator, param_grid = param_grid,
                         scoring = 'balanced_accuracy', cv = 5, n_jobs = -1)
@@ -44,6 +53,7 @@ lr_best_params = search(M.pipeline_lr, param_grid_LR)
 dt_best_params = search(M.pipeline_DT, param_grid_DT)
 svc_best_params = search(M.pipeline_svc, param_grid_svc)
 rf_best_params = search(M.pipeline_RF, param_grid_rf)
+MLP_best_params = search(M.pipeline_MLP, param_grid_MLP)
 
 if __name__ == '__main__':
     print(f'Logistic Regression:')
@@ -73,4 +83,10 @@ if __name__ == '__main__':
     print('')
     print(f'Random search best score: {rf_best_params[2]}')
     print(f'Random search best params: {rf_best_params[3]}')
-
+    print('------------------------------')
+    print(f'Multilayer Perceptron:')
+    print(f'Grid search best score: {MLP_best_params[0]}')
+    print(f'Grid search best params: {MLP_best_params[1]}')
+    print('')
+    print(f'Random search best score: {MLP_best_params[2]}')
+    print(f'Random search best params: {MLP_best_params[3]}')
